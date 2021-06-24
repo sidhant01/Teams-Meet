@@ -21,16 +21,12 @@ io.on('connection', socket => {
   socket.on('join', roomId => {
     let rooms = io.sockets.adapter.rooms;
     let room = rooms.get(roomId);
-    if (room == undefined) {
-      console.log('peer1 joined');
+    var size = (room == undefined ? 0 : room.size);
+    if (room == undefined || size < 10) {
       socket.join(roomId);
-      socket.emit('created');
-    }
-    else if (room.size == 1) {
-      console.log('peer2 joined');
-      socket.join(roomId);
-      socket.broadcast.to(roomId).emit('joined');
-      console.log(socket.id + ' joined');
+      size++;
+      console.log('peer' + size + ' joined');
+      socket.emit('joined', size-1);
     }
     else {
       console.log('room full');
@@ -39,22 +35,26 @@ io.on('connection', socket => {
     console.log(rooms);
   })
 
-  socket.on('new-ice-candidate', (candidate, roomId) => {
-    socket.broadcast.to(roomId).emit('new-ice-candidate', candidate);
+  socket.on('new-ice-candidate', (candidate, id, index) => {
+    console.log('trying ice candidate for ' + id + ' ' + index);
+    socket.to(id).emit('new-ice-candidate', candidate, index);
   });
 
-  socket.on('offer', (offer, roomId) => {
-    socket.broadcast.to(roomId).emit('offer', offer);
+  socket.on('offer', async (offers, roomId) => {
+    let i = 0;
+    const peers = await io.in(roomId).fetchSockets();
+    for (const peer of peers) {
+      console.log(i + ' ' + peer.id);
+      if (peer.id != socket.id) {
+        socket.to(peer.id).emit('offer', offers[i], socket.id, i);
+        ++i;
+      }
+    }
   });
 
-  socket.on('answer', (answer, roomId) => {
-    socket.broadcast.to(roomId).emit('answer', answer);
+  socket.on('answer', (answer, roomId, id, index) => {
+    socket.to(id).emit('answer', answer, socket.id, index);
   });
-
-  socket.on('message', (message, roomId) => {
-    console.log('ahaa');
-    socket.broadcast.to(roomId).emit('message', message);
-  })
 });
 
 server.listen(3000);
