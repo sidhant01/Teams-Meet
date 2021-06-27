@@ -25,18 +25,14 @@ io.on('connection', socket => {
     if (room == undefined || size < 10) {
       socket.join(roomId);
       size++;
-      console.log('peer' + size + ' joined');
       socket.emit('joined', size-1);
     }
     else {
-      console.log('room full');
       socket.emit('full');
     }
-    console.log(rooms);
   })
 
   socket.on('new-ice-candidate', (candidate, id, index) => {
-    console.log('trying ice candidate for ' + id + ' ' + index);
     socket.to(id).emit('new-ice-candidate', candidate, index);
   });
 
@@ -44,7 +40,6 @@ io.on('connection', socket => {
     let i = 0;
     const peers = await io.in(roomId).fetchSockets();
     for (const peer of peers) {
-      console.log(i + ' ' + peer.id);
       if (peer.id != socket.id) {
         socket.to(peer.id).emit('offer', offers[i], socket.id, i);
         ++i;
