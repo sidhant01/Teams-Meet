@@ -4,6 +4,8 @@ const server = require('http').Server(app);
 const io = require('socket.io')(server);
 const { v4: uuidV4 } = require('uuid')
 
+var size = 0;
+
 app.set('view engine', 'ejs')
 app.use(express.static('public'));
 
@@ -21,7 +23,8 @@ io.on('connection', socket => {
   socket.on('join', roomId => {
     let rooms = io.sockets.adapter.rooms;
     let room = rooms.get(roomId);
-    var size = (room == undefined ? 0 : room.size);
+    // var size = (room == undefined ? 0 : room.size);
+    // size++;
     if (room == undefined || size < 10) {
       socket.join(roomId);
       size++;

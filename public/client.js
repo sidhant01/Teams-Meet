@@ -3,28 +3,15 @@ function foo() {
   socket.emit('join', ROOM_ID);
   console.log('hello ' + ROOM_ID);
   const videoGrid = document.getElementById('video-grid');
-  // const myVideo = document.getElementById('my-video');
   let localStream;
 
   const configuration = {'iceServers': [{'urls': 'stun:stun.l.google.com:19302'}]};
 
   var pc = [];
-  // var remoteStream = [];
-  // var remoteVideo = [];
   var size = 0;
 
   async function makeCall(sz) {
-    // navigator.mediaDevices.getUserMedia({video: true, audio: true})
-    // .then(stream => {
-    //     myVideo.srcObject = stream;
-    //     myVideo.addEventListener('loadedmetadata', () => {
-    //       myVideo.play();
-    //     });
-    // })
-    // .catch(error => {
-    //     console.error('Error accessing media devices.', error);
-    // });
-    localStream = await navigator.mediaDevices.getUserMedia({video: true, audio: true});
+    localStream = await navigator.mediaDevices.getUserMedia({video: true, audio: false});
     const localTrack = document.createElement('video');
     localTrack.srcObject = localStream;
     localTrack.onloadedmetadata = function(e) {
@@ -45,28 +32,16 @@ function foo() {
     for (var i = 0; i < sz; i++) {
       console.log(i + ' ' + sz);
       pc.push(new RTCPeerConnection(configuration));
-      // remoteStream.push(new MediaStream());
-      // remoteVideo.push(document.createElement('video'));
-      // remoteVideo[i].srcObject = remoteStream[i];
       pc[i].addEventListener('track', async event => {
         const temp = new MediaStream();
         temp.addTrack(event.track, temp);
         const video = document.createElement('video');
-        // remoteStream[i] = new MediaStream();
-        // remoteVideo[i] = document.createElement('video');
-        // remoteVideo[i].srcObject = remoteStream[i];
-        // remoteStream[i].addTrack(event.track, remoteStream[i]);
-        // remoteVideo[i].onloadedmetadata = function(e) {
-          // remoteVideo[i].play();
-        // }
         video.srcObject = temp;
         video.onloadedmetadata = e => {
           video.play();
         }
         videoGrid.append(video);
-        // videoGrid.append(remoteVideo[i]);
       })
-      // videoGrid.append(remoteVideo[i]);
       localStream.getTracks().forEach(track => {
         pc[i].addTrack(track, localStream);
         console.log('tracks added when called');
@@ -86,13 +61,6 @@ function foo() {
 
   socket.on('offer', async function(offer, id, index) {
       pc.push(new RTCPeerConnection(configuration));
-      // remoteStream.push(new MediaStream());
-      // remoteVideo.push(document.createElement('video'));
-      // remoteVideo[remoteVideo.length-1].srcObject = remoteStream[pc.length-1];
-      // pc[pc.length-1].addEventListener('track', async event => {
-        // remoteStream[pc.length-1].addTrack(event.track, remoteStream[pc.length-1]);
-      // })
-      // videoGrid.append(remoteVideo[pc.length-1]);
       pc[pc.length-1].ontrack = event => {
         console.log('tracks recieved to offer function');
         const remoteStream = new MediaStream();
@@ -130,12 +98,9 @@ function foo() {
     }
   }
 
-  // Listen for remote ICE candidates and add them to the local RTCPeerConnection
   socket.on('new-ice-candidate', async function(candidate, index) {
-  // Listen for connectionstatechange on the local RTCPeerConnection
       pc[index].addEventListener('connectionstatechange', event => {
         if (pc[index].connectionState === 'connected') {
-          // Peers connected
           console.log('connection successful');
         }
       })
