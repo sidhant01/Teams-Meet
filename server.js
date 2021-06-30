@@ -22,11 +22,7 @@ io.on('connection', socket => {
   console.log('User connected: ' + socket.id);
 
   socket.on('join', roomId => {
-    let rooms = io.sockets.adapter.rooms;
-    let room = rooms.get(roomId);
-    // var size = (room == undefined ? 0 : room.size);
-    // size++;
-    if (room == undefined || size < 10) {
+    if (size < 10) {
       socket.join(roomId);
       size++;
       socket.emit('joined', size-1);
