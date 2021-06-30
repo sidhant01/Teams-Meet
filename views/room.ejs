@@ -2,7 +2,7 @@
 <html lang="en" dir="ltr">
   <head>
     <meta charset="utf-8">
-    <!-- <link rel="stylesheet" href="css/styles.css"> -->
+    <link rel="stylesheet" href="styles.css">
     <script>
       const ROOM_ID = "<%= roomId %>";
     </script>
@@ -24,17 +24,22 @@
     </style>
   </head>
   <body onload="foo()">
-    <div id="video-grid"></div>
-    <!-- <video id="my-video"></video> -->
-    <!-- <div id="containerSidebar">
-      <div id="containerChat">
-         <div id="boxChat">
-            <div id="boxMessages"></div>
-            <div id="boxChatInput">
-               <form id="formChat" action=""><input class="form-control" id="inputChat" autocomplete="off" type="text" placeholder="Type your message" maxlength="100"></form>
-            </div>
-         </div>
+    <div id="main-container">
+      <div class="left">
+        <span id="video-grid"></span>
       </div>
-    </div> -->
+      <div class="right">
+        <div id="containerSidebar">
+          <div id="containerChat">
+             <div id="boxChat">
+                <div id="boxMessages"></div>
+                <div id="boxChatInput">
+                   <form id="formChat" action=""><input class="form-control" id="inputChat" autocomplete="off" type="text" placeholder="Type your message" maxlength="100"></form>
+                </div>
+             </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </body>
 </html>

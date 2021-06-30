@@ -1,5 +1,5 @@
 function foo() {
-  const socket = io.connect('http://localhost:3000');
+  const socket = io();
   socket.emit('join', ROOM_ID);
   console.log('hello ' + ROOM_ID);
   const videoGrid = document.getElementById('video-grid');
@@ -11,7 +11,7 @@ function foo() {
   var size = 0;
 
   async function makeCall(sz) {
-    localStream = await navigator.mediaDevices.getUserMedia({video: true, audio: false});
+    localStream = await navigator.mediaDevices.getUserMedia({video: true, audio: true});
     const localTrack = document.createElement('video');
     localTrack.srcObject = localStream;
     localTrack.onloadedmetadata = function(e) {
