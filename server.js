@@ -50,6 +50,10 @@ io.on('connection', socket => {
   socket.on('answer', (answer, roomId, id, index) => {
     socket.to(id).emit('answer', answer, socket.id, index);
   });
+
+  socket.on('new-message', (msg, name, roomId) => {
+    socket.broadcast.to(roomId).emit('new-message', msg, name);
+  })
 });
 
 server.listen(process.env.PORT||3000);

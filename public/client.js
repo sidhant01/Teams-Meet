@@ -1,114 +1,142 @@
-function foo() {
-  const socket = io();
-  socket.emit('join', ROOM_ID);
-  console.log('hello ' + ROOM_ID);
-  const videoGrid = document.getElementById('video-grid');
-  let localStream;
+function isEmptyOrSpaces(str){
+    return str === null || str.match(/^[\s\n\r]*$/) !== null;
+}
+var name = "";
+while (isEmptyOrSpaces(name)) {
+  name = prompt('Enter your name');
+}
+name = name.trim();
 
-  const configuration = {'iceServers': [{'urls': 'stun:stun.l.google.com:19302'}]};
+const socket = io();
+socket.emit('join', ROOM_ID);
+console.log('hello ' + ROOM_ID);
+const videoGrid = document.getElementById('video-grid');
+let localStream;
 
-  var pc = [];
-  var offers = [];
-  var size = 0;
+const configuration = {'iceServers': [{'urls': 'stun:stun.l.google.com:19302'}]};
 
-  socket.on('joined', siz => {
-    size = siz;
-    makeCall(size);
-  });
+var pc = [];
+var offers = [];
+var size = 0;
 
-  socket.on('offer', async function(offer, id, index) {
-      pc.push(new RTCPeerConnection(configuration));
-      var last = pc.length-1;
-      addTrackEventListener(last);
-      addLocalTrack(last);
-      pc[last].createDataChannel('channel');
-      size++;
-      console.log('offer recieved');
-      if (offer) {
-          console.log('offer recieved ' + offer);
-          pc[last].setRemoteDescription(new RTCSessionDescription(offer));
-          pc[last].onicecandidate = event => newIceCandidate(event, id, index);
-          const answer = await pc[last].createAnswer();
-          await pc[last].setLocalDescription(answer);
-          socket.emit('answer', answer, ROOM_ID, id, index);
-          console.log('answer sent ' + answer);
+socket.on('joined', siz => {
+  size = siz;
+  makeCall(size);
+});
+
+socket.on('offer', async function(offer, id, index) {
+    pc.push(new RTCPeerConnection(configuration));
+    var last = pc.length-1;
+    addTrackEventListener(last);
+    addLocalTrack(last);
+    // pc[last].createDataChannel('channel');
+    size++;
+    console.log('offer recieved');
+    if (offer) {
+        console.log('offer recieved ' + offer);
+        pc[last].setRemoteDescription(new RTCSessionDescription(offer));
+        pc[last].onicecandidate = event => newIceCandidate(event, id, index);
+        const answer = await pc[last].createAnswer();
+        await pc[last].setLocalDescription(answer);
+        socket.emit('answer', answer, ROOM_ID, id, index);
+        console.log('answer sent ' + answer);
+    }
+});
+
+socket.on('answer', async function(answer, id, index) {
+  if (answer) {
+    console.log('index: ' + index);
+    pc[index].onicecandidate = event => newIceCandidate(event, id, size-1);
+    await pc[index].setLocalDescription(offers[index]);
+    await pc[index].setRemoteDescription(new RTCSessionDescription(answer));
+  }
+  console.log(index + ' recieved answer');
+});
+
+socket.on('new-ice-candidate', async function(candidate, index) {
+    pc[index].addEventListener('connectionstatechange', event => {
+      if (pc[index].connectionState === 'connected') {
+        console.log('connection successful');
       }
+    })
+    console.log('ice candidate recieved');
+    const iceCandidate = new RTCIceCandidate(candidate);
+    pc[index].addIceCandidate(iceCandidate);
+});
+
+async function playLocalStream() {
+  localStream = await navigator.mediaDevices.getUserMedia({video: true, audio: true});
+  const localTrack = document.createElement('video');
+  localTrack.srcObject = localStream;
+  localTrack.onloadedmetadata = function(e) {
+    localTrack.play();
+  }
+  videoGrid.append(localTrack);
+  console.log('local stream playing');
+}
+
+function addTrackEventListener(index) {
+  pc[index].ontrack = e => {
+    const stream = new MediaStream();
+    stream.addTrack(event.track, stream);
+    const video = document.createElement('video');
+    video.srcObject = stream;
+    video.onloadedmetadata = evt => {
+      video.play();
+    }
+    videoGrid.append(video);
+  }
+}
+
+function addLocalTrack(index) {
+  localStream.getTracks().forEach(track => {
+    pc[index].addTrack(track, localStream);
+    console.log('tracks added when called');
   });
+}
 
-  socket.on('answer', async function(answer, id, index) {
-    if (answer) {
-      console.log('index: ' + index);
-      pc[index].onicecandidate = event => newIceCandidate(event, id, size-1);
-      await pc[index].setLocalDescription(offers[index]);
-      await pc[index].setRemoteDescription(new RTCSessionDescription(answer));
-    }
-    console.log(index + ' recieved answer');
-  });
-
-  socket.on('new-ice-candidate', async function(candidate, index) {
-      pc[index].addEventListener('connectionstatechange', event => {
-        if (pc[index].connectionState === 'connected') {
-          console.log('connection successful');
-        }
-      })
-      console.log('ice candidate recieved');
-      const iceCandidate = new RTCIceCandidate(candidate);
-      pc[index].addIceCandidate(iceCandidate);
-  });
-
-  async function playLocalStream() {
-    localStream = await navigator.mediaDevices.getUserMedia({video: true, audio: true});
-    const localTrack = document.createElement('video');
-    localTrack.srcObject = localStream;
-    localTrack.onloadedmetadata = function(e) {
-      localTrack.play();
-    }
-    videoGrid.append(localTrack);
-    console.log('local stream playing');
+async function makeCall(siz) {
+  await playLocalStream();
+  console.log(offers + ' ' + offers.length);
+  for (var i = 0; i < siz; i++) {
+    console.log(i + ' ' + siz);
+    pc.push(new RTCPeerConnection(configuration));
+    addTrackEventListener(i);
+    addLocalTrack(i);
+    // pc[i].createDataChannel('channel');
+    let offer = await pc[i].createOffer();
+    offers.push(offer);
   }
+  socket.emit('offer', offers, ROOM_ID);
+  console.log(offers.length + ' offers sent');
+}
 
-  function addTrackEventListener(index) {
-    pc[index].ontrack = e => {
-      const stream = new MediaStream();
-      stream.addTrack(event.track, stream);
-      const video = document.createElement('video');
-      video.srcObject = stream;
-      video.onloadedmetadata = evt => {
-        video.play();
-      }
-      videoGrid.append(video);
-    }
+function newIceCandidate(event, id, index) {
+  console.log('ice candidate generated');
+  console.log('trying ' + id + ' ' + index);
+  if (event.candidate) {
+    console.log('fine');
+    socket.emit('new-ice-candidate', event.candidate, id, index);
   }
+}
 
-  function addLocalTrack(index) {
-    localStream.getTracks().forEach(track => {
-      pc[index].addTrack(track, localStream);
-      console.log('tracks added when called');
-    });
-  }
+let msg = $('input');
 
-  async function makeCall(siz) {
-    await playLocalStream();
-    console.log(offers + ' ' + offers.length);
-    for (var i = 0; i < siz; i++) {
-      console.log(i + ' ' + siz);
-      pc.push(new RTCPeerConnection(configuration));
-      addTrackEventListener(i);
-      addLocalTrack(i);
-      pc[i].createDataChannel('channel');
-      let offer = await pc[i].createOffer();
-      offers.push(offer);
-    }
-    socket.emit('offer', offers, ROOM_ID);
-    console.log(offers.length + ' offers sent');
+$('html').keydown(e => {
+  if (e.which == 13 && msg.val().length !== 0) {
+    console.log(msg.val());
+    socket.emit('new-message', msg.val(), name, ROOM_ID);
+    $('ul').append(`<li class="message"><b>You:</b><br/>${msg.val()}</li>`);
+    scrollToBottom();
+    msg.val('');
   }
+})
 
-  function newIceCandidate(event, id, index) {
-    console.log('ice candidate generated');
-    console.log('trying ' + id + ' ' + index);
-    if (event.candidate) {
-      console.log('fine');
-      socket.emit('new-ice-candidate', event.candidate, id, index);
-    }
-  }
+socket.on('new-message', (message, user) => {
+  $('ul').append(`<li class="message"><b>${user}</b><br/>${message}</li>`)
+})
+
+function scrollToBottom() {
+  let chatWindow = $('.main-chat-window');
+  chatWindow.scrollTop(chatWindow.prop('scrollHeight'));
 }
