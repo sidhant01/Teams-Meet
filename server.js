@@ -30,6 +30,9 @@ io.on('connection', socket => {
     else {
       socket.emit('full');
     }
+    socket.on('disconnect', () => {
+      socket.broadcast.to(roomId).emit('user-disconnected', socket.id);
+    })
   })
 
   socket.on('new-ice-candidate', (candidate, id, index) => {
@@ -53,7 +56,7 @@ io.on('connection', socket => {
 
   socket.on('new-message', (msg, name, roomId) => {
     socket.broadcast.to(roomId).emit('new-message', msg, name);
-  })
+  });
 });
 
 server.listen(process.env.PORT||3000);

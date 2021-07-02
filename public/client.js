@@ -7,6 +7,8 @@ while (isEmptyOrSpaces(name)) {
 }
 name = name.trim();
 
+const connectionIndex = {};
+const closed = new Event('close');
 const socket = io();
 socket.emit('join', ROOM_ID);
 console.log('hello ' + ROOM_ID);
@@ -34,6 +36,7 @@ socket.on('offer', async function(offer, id, index) {
     console.log('offer recieved');
     if (offer) {
         console.log('offer recieved ' + offer);
+        connectionIndex[id] = last;
         pc[last].setRemoteDescription(new RTCSessionDescription(offer));
         pc[last].onicecandidate = event => newIceCandidate(event, id, index);
         const answer = await pc[last].createAnswer();
@@ -46,6 +49,7 @@ socket.on('offer', async function(offer, id, index) {
 socket.on('answer', async function(answer, id, index) {
   if (answer) {
     console.log('index: ' + index);
+    connectionIndex[id] = index;
     pc[index].onicecandidate = event => newIceCandidate(event, id, size-1);
     await pc[index].setLocalDescription(offers[index]);
     await pc[index].setRemoteDescription(new RTCSessionDescription(answer));
@@ -64,6 +68,14 @@ socket.on('new-ice-candidate', async function(candidate, index) {
     pc[index].addIceCandidate(iceCandidate);
 });
 
+socket.on('user-disconnected', id => {
+  pc[connectionIndex[id]].close();
+  pc[connectionIndex[id]].dispatchEvent(closed);
+  console.log('state is '+pc[connectionIndex[id]].connectionState);
+  console.log(connectionIndex[id]);
+  console.log('connection closed');
+})
+
 async function playLocalStream() {
   localStream = await navigator.mediaDevices.getUserMedia({video: true, audio: true});
   const localTrack = document.createElement('video');
@@ -76,16 +88,24 @@ async function playLocalStream() {
 }
 
 function addTrackEventListener(index) {
+  const stream = new MediaStream();
+  const video = document.createElement('video');
   pc[index].ontrack = e => {
-    const stream = new MediaStream();
     stream.addTrack(event.track, stream);
-    const video = document.createElement('video');
     video.srcObject = stream;
     video.onloadedmetadata = evt => {
       video.play();
     }
-    videoGrid.append(video);
+    console.log('track event ' + index);
+    // this was/is working
+    // videoGrid.append(video);
   }
+  videoGrid.append(video);
+  // should the videoGrid.append(video) be here?????
+  console.log('index is ' + index);
+  pc[index].addEventListener('close', () => {
+    video.remove();
+  })
 }
 
 function addLocalTrack(index) {
