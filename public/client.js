@@ -3,7 +3,7 @@ function isEmptyOrSpaces(str){
 }
 var name = "";
 while (isEmptyOrSpaces(name)) {
-  name = prompt('Enter your name');
+  name = prompt('Please enter your name');
 }
 name = name.trim();
 
