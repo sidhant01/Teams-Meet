@@ -8,7 +8,7 @@ while (isEmptyOrSpaces(name)) {
 name = name.trim();
 
 const connectionIndex = {};
-const closed = new Event('close');
+const closed = new Event('closed');
 const socket = io();
 socket.emit('join', ROOM_ID);
 console.log('hello ' + ROOM_ID);
@@ -103,8 +103,9 @@ function addTrackEventListener(index) {
   videoGrid.append(video);
   // should the videoGrid.append(video) be here?????
   console.log('index is ' + index);
-  pc[index].addEventListener('close', () => {
+  pc[index].addEventListener('closed', () => {
     video.remove();
+    pc.splice(index, 1);
   })
 }
 
