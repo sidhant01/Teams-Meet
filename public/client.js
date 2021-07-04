@@ -19,6 +19,7 @@ const configuration = {'iceServers': [{'urls': 'stun:stun.l.google.com:19302'}]}
 var pc = [];
 var offers = [];
 var size = 0;
+var cur = 0;
 
 socket.on('joined', siz => {
   size = siz;
@@ -79,6 +80,7 @@ socket.on('user-disconnected', id => {
     console.log('connection state = ' + pc[i].connectionState);
   }
   pc[index].close([index]);
+  cur = index;
   console.log('closed ' + index);
   pc[index].dispatchEvent(closed);
   delete connectionIndex.id;
@@ -119,14 +121,11 @@ function addTrackEventListener(index) {
   videoGrid.append(video);
   // should the videoGrid.append(video) be here?????
   // console.log('index is ' + index);
-  pc[index].addEventListener('closed', i => {
+  pc[index].addEventListener('closed', () => {
     console.log('here1');
     video.remove();
     console.log('here2');
-    pc.splice(i, 1);
-    for (var i = 0; i < pc.length; i++) {
-      console.log('connection state = ' + pc[i].connectionState);
-    }
+    pc.splice(cur, 1);
     console.log('here3');
   })
 }
