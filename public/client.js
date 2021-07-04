@@ -11,7 +11,6 @@ const connectionIndex = {};
 const closed = new Event('closed');
 const socket = io();
 socket.emit('join', ROOM_ID);
-console.log('hello ' + ROOM_ID);
 const videoGrid = document.getElementById('video-grid');
 let localStream;
 
@@ -33,47 +32,64 @@ socket.on('offer', async function(offer, id, index) {
     addLocalTrack(last);
     // pc[last].createDataChannel('channel');
     size++;
-    console.log('offer recieved');
+    // console.log('offer recieved');
     if (offer) {
-        console.log('offer recieved ' + offer);
+        // console.log('offer recieved ' + offer);
         connectionIndex[id] = last;
         pc[last].setRemoteDescription(new RTCSessionDescription(offer));
         pc[last].onicecandidate = event => newIceCandidate(event, id, index);
         const answer = await pc[last].createAnswer();
         await pc[last].setLocalDescription(answer);
         socket.emit('answer', answer, ROOM_ID, id, index);
-        console.log('answer sent ' + answer);
+        // console.log('answer sent ' + answer);
     }
 });
 
 socket.on('answer', async function(answer, id, index) {
   if (answer) {
-    console.log('index: ' + index);
+    // console.log('index: ' + index);
     connectionIndex[id] = index;
     pc[index].onicecandidate = event => newIceCandidate(event, id, size-1);
+    console.log('size = ' + size-1);
     await pc[index].setLocalDescription(offers[index]);
     await pc[index].setRemoteDescription(new RTCSessionDescription(answer));
   }
-  console.log(index + ' recieved answer');
+  // console.log(index + ' recieved answer');
 });
 
 socket.on('new-ice-candidate', async function(candidate, index) {
-    pc[index].addEventListener('connectionstatechange', event => {
-      if (pc[index].connectionState === 'connected') {
-        console.log('connection successful');
-      }
-    })
-    console.log('ice candidate recieved');
+    // pc[index].addEventListener('connectionstatechange', event => {
+    //   console.log('connection state change of ' + index);
+    //   if (pc[index].connectionState === 'connected') {
+    //     // console.log('connection successful');
+    //   }
+    // })
+    // console.log('ice candidate recieved');
     const iceCandidate = new RTCIceCandidate(candidate);
+    console.log('adding ice on ' + index);
     pc[index].addIceCandidate(iceCandidate);
 });
 
 socket.on('user-disconnected', id => {
-  pc[connectionIndex[id]].close();
-  pc[connectionIndex[id]].dispatchEvent(closed);
-  console.log('state is '+pc[connectionIndex[id]].connectionState);
-  console.log(connectionIndex[id]);
-  console.log('connection closed');
+  size--;
+  let index = connectionIndex[id];
+  console.log('disconnect index ' + index);
+  console.log('pc length = ' + pc.length);
+  for (var i = 0; i < pc.length; i++) {
+    console.log('connection state = ' + pc[i].connectionState);
+  }
+  pc[index].close([index]);
+  console.log('closed ' + index);
+  pc[index].dispatchEvent(closed);
+  delete connectionIndex.id;
+  for (socketId in connectionIndex) {
+    if (connectionIndex[socketId] > index) {
+      connectionIndex[socketId]--;
+    }
+  }
+  // console.log('state is ' + pc[connectionIndex[id]].connectionState);
+  // console.log(connectionIndex[id]);
+  // console.log('connection closed');
 })
 
 async function playLocalStream() {
@@ -84,7 +100,7 @@ async function playLocalStream() {
     localTrack.play();
   }
   videoGrid.append(localTrack);
-  console.log('local stream playing');
+  // console.log('local stream playing');
 }
 
 function addTrackEventListener(index) {
@@ -96,31 +112,37 @@ function addTrackEventListener(index) {
     video.onloadedmetadata = evt => {
       video.play();
     }
-    console.log('track event ' + index);
+    // console.log('track event ' + index);
     // this was/is working
     // videoGrid.append(video);
   }
   videoGrid.append(video);
   // should the videoGrid.append(video) be here?????
-  console.log('index is ' + index);
-  pc[index].addEventListener('closed', () => {
+  // console.log('index is ' + index);
+  pc[index].addEventListener('closed', i => {
+    console.log('here1');
     video.remove();
-    pc.splice(index, 1);
+    console.log('here2');
+    pc.splice(i, 1);
+    for (var i = 0; i < pc.length; i++) {
+      console.log('connection state = ' + pc[i].connectionState);
+    }
+    console.log('here3');
   })
 }
 
 function addLocalTrack(index) {
   localStream.getTracks().forEach(track => {
     pc[index].addTrack(track, localStream);
-    console.log('tracks added when called');
+    // console.log('tracks added when called');
   });
 }
 
 async function makeCall(siz) {
   await playLocalStream();
-  console.log(offers + ' ' + offers.length);
+  // console.log(offers + ' ' + offers.length);
   for (var i = 0; i < siz; i++) {
-    console.log(i + ' ' + siz);
+    // console.log(i + ' ' + siz);
     pc.push(new RTCPeerConnection(configuration));
     addTrackEventListener(i);
     addLocalTrack(i);
@@ -129,14 +151,14 @@ async function makeCall(siz) {
     offers.push(offer);
   }
   socket.emit('offer', offers, ROOM_ID);
-  console.log(offers.length + ' offers sent');
+  // console.log(offers.length + ' offers sent');
 }
 
 function newIceCandidate(event, id, index) {
-  console.log('ice candidate generated');
-  console.log('trying ' + id + ' ' + index);
+  // console.log('ice candidate generated');
+  // console.log('trying ' + id + ' ' + index);
   if (event.candidate) {
-    console.log('fine');
+    // console.log('fine');
     socket.emit('new-ice-candidate', event.candidate, id, index);
   }
 }
@@ -145,7 +167,7 @@ let msg = $('input');
 
 $('html').keydown(e => {
   if (e.which == 13 && msg.val().length !== 0) {
-    console.log(msg.val());
+    // console.log(msg.val());
     socket.emit('new-message', msg.val(), name, ROOM_ID);
     $('ul').append(`<li class="message"><b>You:</b><br/>${msg.val()}</li>`);
     scrollToBottom();
