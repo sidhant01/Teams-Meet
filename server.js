@@ -2,7 +2,10 @@ const express = require('express');
 const app = express();
 const server = require('http').Server(app);
 const io = require('socket.io')(server);
+const bodyParser = require('body-parser');
 const { v4: uuidV4 } = require('uuid')
+
+app.use(bodyParser.urlencoded({exteded: false}));
 
 var size = 0;
 
@@ -15,7 +18,13 @@ app.get('/', (req, res) => {
 })
 
 app.get('/:room', (req, res) => {
-  res.render('room', { roomId: req.params.room });
+  res.render('index', { roomId: req.params.room });
+})
+
+app.post('/:room', (req, res) => {
+  console.log(req.body);
+  var name = req.body.name;
+  res.render('room', { roomId: req.params.room, name: name });
 })
 
 io.on('connection', socket => {

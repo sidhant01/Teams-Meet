@@ -1,12 +1,3 @@
-function isEmptyOrSpaces(str){
-    return str === null || str.match(/^[\s\n\r]*$/) !== null;
-}
-var name = "";
-while (isEmptyOrSpaces(name)) {
-  name = prompt('Please enter your name');
-}
-name = name.trim();
-
 const connectionIndex = {};
 const closed = new Event('closed');
 const socket = io();
@@ -109,7 +100,7 @@ function addTrackEventListener(index) {
   const stream = new MediaStream();
   const video = document.createElement('video');
   pc[index].ontrack = e => {
-    stream.addTrack(event.track, stream);
+    stream.addTrack(e.track, stream);
     video.srcObject = stream;
     video.onloadedmetadata = evt => {
       video.play();
@@ -167,7 +158,7 @@ let msg = $('input');
 $('html').keydown(e => {
   if (e.which == 13 && msg.val().length !== 0) {
     // console.log(msg.val());
-    socket.emit('new-message', msg.val(), name, ROOM_ID);
+    socket.emit('new-message', msg.val(), NAME, ROOM_ID);
     $('ul').append(`<li class="message"><b>You:</b><br/>${msg.val()}</li>`);
     scrollToBottom();
     msg.val('');
