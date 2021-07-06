@@ -88,6 +88,7 @@ socket.on('user-disconnected', id => {
 async function playLocalStream() {
   localStream = await navigator.mediaDevices.getUserMedia({video: true, audio: true});
   const localTrack = document.createElement('video');
+  localTrack.muted = true;
   localTrack.srcObject = localStream;
   localTrack.onloadedmetadata = function(e) {
     localTrack.play();
@@ -172,4 +173,50 @@ socket.on('new-message', (message, user) => {
 function scrollToBottom() {
   let chatWindow = $('.main-chat-window');
   chatWindow.scrollTop(chatWindow.prop('scrollHeight'));
+}
+
+function muteUnmute() {
+  const isEnabled = localStream.getAudioTracks()[0].enabled;
+  console.log(isEnabled);
+  if (isEnabled) {
+    localStream.getAudioTracks()[0].enabled = false;
+    setUnmuteButton();
+  }
+  else {
+    localStream.getAudioTracks()[0].enabled = true;
+    setMuteButton();
+  }
+}
+
+function setMuteButton() {
+  const html = `<i class="fas fa-microphone"></i>`
+  document.querySelector('.main-mute-button').innerHTML = html;
+}
+
+function setUnmuteButton() {
+  const html = `<i class="fas fa-microphone-slash"></i>`;
+  document.querySelector('.main-mute-button').innerHTML = html;
+}
+
+function stopPlay() {
+  const isEnabled = localStream.getVideoTracks()[0].enabled;
+  console.log(isEnabled);
+  if (isEnabled) {
+    localStream.getVideoTracks()[0].enabled = false;
+    setPlayVideoButton();
+  }
+  else {
+    localStream.getVideoTracks()[0].enabled = true;
+    setStopVideoButton();
+  }
+}
+
+function setStopVideoButton() {
+  const html = `<i class="fas fa-video"></i>`;
+  document.querySelector('.main-video-button').innerHTML = html;
+}
+
+function setPlayVideoButton() {
+  const html = `<i class="fas fa-video-slash"></i>`;
+  document.querySelector('.main-video-button').innerHTML = html;
 }
