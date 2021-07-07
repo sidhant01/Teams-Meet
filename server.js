@@ -49,7 +49,7 @@ io.on('connection', socket => {
     socket.to(id).emit('new-ice-candidate', candidate, index);
   });
 
-  socket.on('offer', async (offers, roomId) => {
+  socket.on('offers', async (offers, roomId) => {
     let i = 0;
     const peers = await io.in(roomId).fetchSockets();
     for (const peer of peers) {
