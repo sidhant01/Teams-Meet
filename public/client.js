@@ -4,6 +4,7 @@ const socket = io();
 socket.emit('join', ROOM_ID);
 const videoGrid = document.getElementById('video-grid');
 let localStream;
+let localTrack;
 
 const configuration = {'iceServers': [{'urls': 'stun:stun.l.google.com:19302'}]};
 
@@ -87,7 +88,7 @@ socket.on('user-disconnected', id => {
 
 async function playLocalStream() {
   localStream = await navigator.mediaDevices.getUserMedia({video: true, audio: true});
-  const localTrack = document.createElement('video');
+  localTrack = document.createElement('video');
   localTrack.muted = true;
   localTrack.srcObject = localStream;
   localTrack.onloadedmetadata = function(e) {
@@ -194,7 +195,7 @@ function setMuteButton() {
 }
 
 function setUnmuteButton() {
-  const html = `<i class="fas fa-microphone-slash"></i>`;
+  const html = `<i class="unmute fas fa-microphone-slash"></i>`;
   document.querySelector('.main-mute-button').innerHTML = html;
 }
 
@@ -203,6 +204,9 @@ function stopPlay() {
   console.log(isEnabled);
   if (isEnabled) {
     localStream.getVideoTracks()[0].enabled = false;
+    localTrack.pause();
+    localTrack.src = "";
+    localStream.getTracks()[0].stop();
     setPlayVideoButton();
   }
   else {
@@ -217,6 +221,6 @@ function setStopVideoButton() {
 }
 
 function setPlayVideoButton() {
-  const html = `<i class="fas fa-video-slash"></i>`;
+  const html = `<i class="play fas fa-video-slash"></i>`;
   document.querySelector('.main-video-button').innerHTML = html;
 }

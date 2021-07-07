@@ -3,7 +3,8 @@ body {
   padding: 0;
   /* background-color: black; */
   /* background-color: #1b1a1a */
-  background-color: #0a0a0a;
+  /* background-color: #0a0a0a; */
+  background-color: #171717;
 }
 
 #video-grid {
@@ -87,8 +88,6 @@ video {
 }
 
 .main-controls-button {
-  /* padding-left: 12px; */
-  /* padding-right: 12px; */
   padding: 10px 12px;
 }
 
@@ -104,4 +103,8 @@ video {
 
 .leave-meeting {
   color: #eb534b;
+}
+
+.unmute, .play {
+  color: #cc3b33;
 }

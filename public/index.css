@@ -1,0 +1,62 @@
+.header {
+  padding: 30px 30px 70px;
+  align-items: center;
+}
+
+.main {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 300;
+}
+
+.main-left {
+  /* flex: .4; */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-right: 20px;
+}
+
+.main-right {
+  /* flex: .5; */
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding-left: 50px;
+}
+
+.right-top {
+  flex-grow: 1;
+  align-items: center;
+}
+
+.right-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.controls-button {
+  /* padding: 10px 20px; */
+}
+
+.controls-button i {
+  font-size: 20px;
+  padding: 10px 20px;
+}
+
+.controls-button :hover {
+  cursor: pointer;
+  background-color: #A5ADA9;
+  /* border-radius: 5px; */
+}
+
+#user-video {
+  height: 330px;
+  width: 440px;
+}
+
+.unmute, .play {
+  color: #cc3b33;
+}
