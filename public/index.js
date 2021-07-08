@@ -1,5 +1,12 @@
-playLocalStream();
+const muteButton = `<span class="material-icons-outlined">&#xe029</span>`;
+const unmuteButton = `<span class="unmute material-icons-outlined">&#xe02b</span>`;
+const stopVideoButton = `<span class="material-icons-outlined">&#xe04b</span>`;
+const playVideoButton = `<span class="play material-icons-outlined">&#xe04c</span>`;
 let localStream;
+sessionStorage.setItem('mic', true);
+sessionStorage.setItem('cam', true);
+
+playLocalStream();
 
 async function playLocalStream() {
   localStream = await navigator.mediaDevices.getUserMedia({video: true, audio: true});
@@ -11,48 +18,30 @@ async function playLocalStream() {
   }
 }
 
-function muteUnmute() {
+function pressMicButton() {
   const isEnabled = localStream.getAudioTracks()[0].enabled;
+  sessionStorage.setItem('mic', !isEnabled);
   console.log(isEnabled);
   if (isEnabled) {
     localStream.getAudioTracks()[0].enabled = false;
-    setUnmuteButton();
+    document.querySelector('.main-mute-button').innerHTML = unmuteButton;
   }
   else {
     localStream.getAudioTracks()[0].enabled = true;
-    setMuteButton();
+    document.querySelector('.main-mute-button').innerHTML = muteButton;
   }
 }
 
-function setMuteButton() {
-  const html = `<i class="fas fa-microphone"></i>`
-  document.querySelector('.mute-button').innerHTML = html;
-}
-
-function setUnmuteButton() {
-  const html = `<i class="unmute fas fa-microphone-slash"></i>`;
-  document.querySelector('.mute-button').innerHTML = html;
-}
-
-function stopPlay() {
+function pressVideoButton() {
   const isEnabled = localStream.getVideoTracks()[0].enabled;
+  sessionStorage.setItem('cam', !isEnabled);
   console.log(isEnabled);
   if (isEnabled) {
     localStream.getVideoTracks()[0].enabled = false;
-    setPlayVideoButton();
+    document.querySelector('.main-video-button').innerHTML = playVideoButton;
   }
   else {
     localStream.getVideoTracks()[0].enabled = true;
-    setStopVideoButton();
+    document.querySelector('.main-video-button').innerHTML = stopVideoButton;
   }
-}
-
-function setStopVideoButton() {
-  const html = `<i class="fas fa-video"></i>`;
-  document.querySelector('.video-button').innerHTML = html;
-}
-
-function setPlayVideoButton() {
-  const html = `<i class="play fas fa-video-slash"></i>`;
-  document.querySelector('.video-button').innerHTML = html;
 }

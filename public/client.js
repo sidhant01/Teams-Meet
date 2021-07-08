@@ -1,19 +1,25 @@
-const connectionIndex = {};
 const closed = new Event('closed');
 const socket = io();
-socket.emit('join', ROOM_ID);
-const videoGrid = document.getElementById('video-grid');
+const videoGrid = $('#video-grid');
+const muteButton = `<span class="material-icons">&#xe029</span>`;
+const unmuteButton = `<span class="unmute material-icons">&#xe02b</span>`;
+const stopVideoButton = `<span class="material-icons-outlined">&#xe04b</span>`;
+const playVideoButton = `<span class="play material-icons-outlined">&#xe04c</span>`;
 let localStream;
-let localTrack;
+let myVideo;
 
 const configuration = {'iceServers': [{'urls': 'stun:stun.l.google.com:19302'}]};
+const connectionIndex = {};
+const peerNames = {};
 
 var peerConnection = [];
 var offers = [];
 var size = 0;
 var cur = 0;
 
-socket.on('joined', peersInRoom => {
+socket.emit('join', ROOM_ID);
+
+socket.on('user-connected', peersInRoom => {
   size = peersInRoom;
   makeCall();
 });
@@ -55,6 +61,7 @@ socket.on('user-disconnected', id => {
   cur = index;
   peerConnection[index].dispatchEvent(closed);
   delete connectionIndex.id;
+  delete peerNames.id;
   for (socketId in connectionIndex) {
     if (connectionIndex[socketId] > index) {
       connectionIndex[socketId]--;
@@ -64,28 +71,36 @@ socket.on('user-disconnected', id => {
 
 async function playLocalStream() {
   localStream = await navigator.mediaDevices.getUserMedia({video: true, audio: true});
-  localTrack = document.createElement('video');
-  localTrack.muted = true;
-  localTrack.srcObject = localStream;
-  localTrack.onloadedmetadata = function(e) {
-    localTrack.play();
+  if (sessionStorage.getItem('mic') === "false") {
+    pressMicButton();
   }
-  videoGrid.append(localTrack);
+  if (sessionStorage.getItem('cam') === "false") {
+    pressVideoButton();
+  }
+  myVideo = document.createElement('video');
+  myVideo.muted = true;
+  myVideo.srcObject = localStream;
+  myVideo.onloadedmetadata = function(e) {
+    myVideo.play();
+  }
+  videoGrid.append(myVideo);
 }
 
 function addTrackEventListener(index) {
-  const stream = new MediaStream();
-  const video = document.createElement('video');
+  const remoteStream = new MediaStream();
+  const remoteVideo = document.createElement('video');
+  remoteVideo.srcObject = remoteStream;
   peerConnection[index].ontrack = e => {
-    stream.addTrack(e.track, stream);
-    video.srcObject = stream;
-    video.onloadedmetadata = evt => {
-      video.play();
+    remoteStream.addTrack(e.track, remoteStream);
+    remoteVideo.onloadedmetadata = evt => {
+      remoteVideo.play();
     }
   }
-  videoGrid.append(video);
-  peerConnection[index].addEventListener('closed', () => {
-    video.remove();
+  remoteVideo.onloadedmetadata = evt => remoteVideo.play();
+  videoGrid.append(remoteVideo);
+  peerConnection[index].addEventListener('closed', (req) => {
+    let x = peerConnection.indexOf(req.target);
+    remoteVideo.remove();
     peerConnection.splice(cur, 1);
   })
 }
@@ -109,6 +124,7 @@ async function makeCall() {
 }
 
 function newIceCandidate(event, id, index) {
+  console.log('index is ' + index);
   if (event.candidate) {
     socket.emit('new-ice-candidate', event.candidate, id, index);
   }
@@ -134,48 +150,41 @@ function scrollToBottom() {
   chatWindow.scrollTop(chatWindow.prop('scrollHeight'));
 }
 
-function muteUnmute() {
+function pressMicButton() {
   const isEnabled = localStream.getAudioTracks()[0].enabled;
   console.log(isEnabled);
   if (isEnabled) {
     localStream.getAudioTracks()[0].enabled = false;
-    setUnmuteButton();
+    $('.main-mute-button').html(unmuteButton);
   }
   else {
     localStream.getAudioTracks()[0].enabled = true;
-    setMuteButton();
+    $('.main-mute-button').html(muteButton);
   }
 }
 
-function setMuteButton() {
-  const html = `<i class="fas fa-microphone"></i>`
-  document.querySelector('.main-mute-button').innerHTML = html;
-}
-
-function setUnmuteButton() {
-  const html = `<i class="unmute fas fa-microphone-slash"></i>`;
-  document.querySelector('.main-mute-button').innerHTML = html;
-}
-
-function stopPlay() {
+function pressVideoButton() {
   const isEnabled = localStream.getVideoTracks()[0].enabled;
   console.log(isEnabled);
   if (isEnabled) {
     localStream.getVideoTracks()[0].enabled = false;
-    setPlayVideoButton();
+    $('.main-video-button').html(playVideoButton);
   }
   else {
     localStream.getVideoTracks()[0].enabled = true;
-    setStopVideoButton();
+    $('.main-video-button').html(stopVideoButton);
   }
 }
 
-function setStopVideoButton() {
-  const html = `<i class="fas fa-video"></i>`;
-  document.querySelector('.main-video-button').innerHTML = html;
+function copyLink() {
+  link = window.location.href;
+  var $temp = $("<input>");
+  $("body").append($temp);
+  $temp.val(link).select();
+  document.execCommand("copy");
+  $temp.remove();
 }
 
-function setPlayVideoButton() {
-  const html = `<i class="play fas fa-video-slash"></i>`;
-  document.querySelector('.main-video-button').innerHTML = html;
+function disconnect() {
+  window.location.href = "/";
 }

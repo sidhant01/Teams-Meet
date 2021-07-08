@@ -3,8 +3,10 @@
   <head>
     <meta charset="utf-8">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-    <!-- bootstrap is used just for fonts -->
+    <link rel="icon" href="favicon.png">
     <link rel="stylesheet" href="room.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
     <script src="https://kit.fontawesome.com/c939d0e917.js"></script>
@@ -25,21 +27,25 @@
         </div>
         <div class="main-controls">
           <div class="main-controls-block">
-            <div class="main-controls-button">
+            <div onclick="copyLink()" class="main-controls-button">
               <span class="copy-link">Copy link</span>
             </div>
           </div>
           <div class="main-controls-block">
-            <div onclick="muteUnmute()" class="main-controls-button main-mute-button">
-              <i class="fas fa-microphone"></i>
+            <div onclick="pressMicButton()" class="main-controls-button main-mute-button">
+              <span class="material-icons-outlined">
+                &#xe029;
+              </span>
             </div>
-            <div onclick="stopPlay()" class="main-controls-button main-video-button">
-              <i class="fas fa-video"></i>
+            <div onclick="pressVideoButton()" class="main-controls-button main-video-button">
+              <span class="material-icons-outlined">
+                &#xe04b;
+              </span>
             </div>
           </div>
           <div class="main-controls-block">
-            <div class="main-controls-button">
-              <span class="leave-meeting">Leave Meeting</span>
+            <div onclick="disconnect()" class="main-controls-button">
+              <span class="leave-meeting material-icons">&#xe0b1;</span>
             </div>
           </div>
         </div>
