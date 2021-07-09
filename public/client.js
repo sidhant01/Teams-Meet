@@ -82,7 +82,7 @@ async function playLocalStream() {
     pressVideoButton();
   }
   myVideo = document.createElement('video');
-  myVideo.muted = true;
+  // myVideo.muted = true;
   myVideo.srcObject = localStream;
   myVideo.onloadedmetadata = function(e) {
     myVideo.play();
