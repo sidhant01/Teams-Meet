@@ -11,6 +11,10 @@ body {
   display: flex;
   justify-content: center;
 }
+.wrapper {
+  gap: 5px;
+  flex-wrap: wrap;
+}
 
 video {
   height: 300px;
@@ -54,6 +58,9 @@ video {
 .main-chat-window {
   flex-grow: 1;
   overflow-y: scroll;
+  max-width: 300px;
+  overflow-wrap: break-word;
+  padding-right: 15px;
 }
 
 .main-message-container {

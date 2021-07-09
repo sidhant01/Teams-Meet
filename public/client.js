@@ -88,12 +88,13 @@ async function playLocalStream() {
     myVideo.play();
   }
   videoGrid.append(myVideo);
-  // $(video).draggable();
 }
 
 function addTrackEventListener(index, name) {
   const remoteStream = new MediaStream();
+  const div = document.createElement('div');
   const remoteVideo = document.createElement('video');
+  div.innerHTML = remoteVideo;
   remoteVideo.srcObject = remoteStream;
   peerConnection[index].ontrack = e => {
     remoteStream.addTrack(e.track, remoteStream);
