@@ -26,15 +26,13 @@ app.post('/:room', (req, res) => {
   res.render('room', { roomId: req.params.room, name: name });
 })
 
-const names = {};
-
 io.on('connection', socket => {
   console.log('User connected: ' + socket.id);
-  socket.on('join', roomId, name => {
+  socket.on('join', (roomId, name) => {
     if (size < 10) {
       socket.join(roomId);
       socket.emit('user-connected', size);
-      names[socket.id] = name;
+      socket.broadcast.to(roomId).emit('new-peer', socket.id, name);
       size++;
     }
     else {
@@ -42,7 +40,6 @@ io.on('connection', socket => {
     }
     socket.on('disconnect', () => {
       socket.broadcast.to(roomId).emit('user-disconnected', socket.id);
-      delete names.(socket.id);
       size--;
     })
   })
@@ -68,10 +65,6 @@ io.on('connection', socket => {
 
   socket.on('new-message', (msg, name, roomId) => {
     socket.broadcast.to(roomId).emit('new-message', msg, name);
-  });
-
-  socket.on('get-name', id => {
-    socket.emit('peer-name', id, names[id]);
   });
 });
 

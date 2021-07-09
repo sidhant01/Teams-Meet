@@ -24,11 +24,15 @@ socket.on('user-connected', peersInRoom => {
   makeCall();
 });
 
+socket.on('new-peer', (id, name) => {
+  peerNames[id] = name;
+})
+
 socket.on('offer', async function(offer, id, index) {
     peerConnection.push(new RTCPeerConnection(configuration));
     var last = peerConnection.length-1;
-    addTrackEventListener(last);
-    addLocalTrack(last);
+    addTrackEventListener(last, peerNames[id]);
+    addLocalTracks(last);
     size++;
     if (offer) {
         connectionIndex[id] = last;
@@ -67,7 +71,7 @@ socket.on('user-disconnected', id => {
       connectionIndex[socketId]--;
     }
   }
-})
+});
 
 async function playLocalStream() {
   localStream = await navigator.mediaDevices.getUserMedia({video: true, audio: true});
@@ -84,9 +88,10 @@ async function playLocalStream() {
     myVideo.play();
   }
   videoGrid.append(myVideo);
+  // $(video).draggable();
 }
 
-function addTrackEventListener(index) {
+function addTrackEventListener(index, name) {
   const remoteStream = new MediaStream();
   const remoteVideo = document.createElement('video');
   remoteVideo.srcObject = remoteStream;
@@ -105,7 +110,7 @@ function addTrackEventListener(index) {
   })
 }
 
-function addLocalTrack(index) {
+function addLocalTracks(index) {
   localStream.getTracks().forEach(track => {
     peerConnection[index].addTrack(track, localStream);
   });
@@ -116,7 +121,7 @@ async function makeCall() {
   for (var i = 0; i < size; i++) {
     peerConnection.push(new RTCPeerConnection(configuration));
     addTrackEventListener(i);
-    addLocalTrack(i);
+    addLocalTracks(i);
     let offer = await peerConnection[i].createOffer();
     offers.push(offer);
   }
