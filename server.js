@@ -28,11 +28,10 @@ app.post('/:room', (req, res) => {
 
 io.on('connection', socket => {
   console.log('User connected: ' + socket.id);
-  socket.on('join', (roomId, name) => {
-    if (size < 10) {
+  socket.on('join', roomId => {
+    if (size < 6) {
       socket.join(roomId);
       socket.emit('user-connected', size);
-      socket.broadcast.to(roomId).emit('new-peer', socket.id, name);
       size++;
     }
     else {
@@ -48,19 +47,21 @@ io.on('connection', socket => {
     socket.to(id).emit('new-ice-candidate', candidate, index);
   });
 
-  socket.on('offers', async (offers, roomId) => {
+  socket.on('offers', async (offers, roomId, name) => {
+    console.log('offer from ' + name);
     let i = 0;
     const peers = await io.in(roomId).fetchSockets();
     for (const peer of peers) {
       if (peer.id != socket.id) {
-        socket.to(peer.id).emit('offer', offers[i], socket.id, i);
+        socket.to(peer.id).emit('offer', offers[i], socket.id, i, name);
         ++i;
       }
     }
   });
 
-  socket.on('answer', (answer, roomId, id, index) => {
-    socket.to(id).emit('answer', answer, socket.id, index);
+  socket.on('answer', (answer, roomId, id, index, name) => {
+    console.log('answer from ' + name);
+    socket.to(id).emit('answer', answer, socket.id, index, name);
   });
 
   socket.on('new-message', (msg, name, roomId) => {

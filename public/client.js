@@ -10,28 +10,23 @@ let myVideo;
 
 const configuration = {'iceServers': [{'urls': 'stun:stun.l.google.com:19302'}]};
 const connectionIndex = {};
-const peerNames = {};
 
 var peerConnection = [];
 var offers = [];
 var size = 0;
 var cur = 0;
 
-socket.emit('join', ROOM_ID);
+socket.emit('join', ROOM_ID, NAME);
 
 socket.on('user-connected', peersInRoom => {
   size = peersInRoom;
   makeCall();
 });
 
-socket.on('new-peer', (id, name) => {
-  peerNames[id] = name;
-})
-
-socket.on('offer', async function(offer, id, index) {
+socket.on('offer', async function(offer, id, index, peerName) {
     peerConnection.push(new RTCPeerConnection(configuration));
     var last = peerConnection.length-1;
-    addTrackEventListener(last, peerNames[id]);
+    addTrackEventListener(last, peerName);
     addLocalTracks(last);
     size++;
     if (offer) {
@@ -40,13 +35,14 @@ socket.on('offer', async function(offer, id, index) {
         peerConnection[last].onicecandidate = event => newIceCandidate(event, id, index);
         const answer = await peerConnection[last].createAnswer();
         await peerConnection[last].setLocalDescription(answer);
-        socket.emit('answer', answer, ROOM_ID, id, index);
+        socket.emit('answer', answer, ROOM_ID, id, index, NAME);
     }
 });
 
-socket.on('answer', async function(answer, id, index) {
+socket.on('answer', async function(answer, id, index, peerName) {
   if (answer) {
     connectionIndex[id] = index;
+    addTrackEventListener(index, peerName);
     peerConnection[index].onicecandidate = event => newIceCandidate(event, id, size-1);
     await peerConnection[index].setLocalDescription(offers[index]);
     await peerConnection[index].setRemoteDescription(new RTCSessionDescription(answer));
@@ -65,7 +61,6 @@ socket.on('user-disconnected', id => {
   cur = index;
   peerConnection[index].dispatchEvent(closed);
   delete connectionIndex.id;
-  delete peerNames.id;
   for (socketId in connectionIndex) {
     if (connectionIndex[socketId] > index) {
       connectionIndex[socketId]--;
@@ -82,17 +77,39 @@ async function playLocalStream() {
     pressVideoButton();
   }
   myVideo = document.createElement('video');
+  const videoDiv = document.createElement('div');
+  const nameElement = document.createTextNode('You');
+  videoDiv.setAttribute('class', 'video-div');
   myVideo.muted = true;
   myVideo.srcObject = localStream;
   myVideo.onloadedmetadata = function(e) {
     myVideo.play();
   }
-  videoGrid.append(myVideo);
+  videoDiv.appendChild(myVideo);
+  videoDiv.appendChild(nameElement);
+  videoDiv.setAttribute('class', 'video-div');
+  videoGrid.append(videoDiv);
+}
+
+async function makeCall() {
+  await playLocalStream();
+  for (var i = 0; i < size; i++) {
+    peerConnection.push(new RTCPeerConnection(configuration));
+    // addTrackEventListener(i);
+    addLocalTracks(i);
+    let offer = await peerConnection[i].createOffer();
+    offers.push(offer);
+  }
+  socket.emit('offers', offers, ROOM_ID, NAME);
 }
 
 function addTrackEventListener(index, name) {
+  console.log(name);
   const remoteStream = new MediaStream();
+  const videoDiv = document.createElement('div');
   const remoteVideo = document.createElement('video');
+  const nameElement = document.createTextNode(name);
+  videoDiv.setAttribute('class', 'video-div');
   remoteVideo.srcObject = remoteStream;
   peerConnection[index].ontrack = e => {
     remoteStream.addTrack(e.track, remoteStream);
@@ -101,10 +118,12 @@ function addTrackEventListener(index, name) {
     }
   }
   remoteVideo.onloadedmetadata = evt => remoteVideo.play();
-  videoGrid.append(remoteVideo);
+  videoDiv.appendChild(remoteVideo);
+  videoDiv.appendChild(nameElement);
+  videoGrid.append(videoDiv);
   peerConnection[index].addEventListener('closed', (req) => {
     let x = peerConnection.indexOf(req.target);
-    remoteVideo.remove();
+    videoDiv.remove();
     peerConnection.splice(cur, 1);
   })
 }
@@ -113,18 +132,6 @@ function addLocalTracks(index) {
   localStream.getTracks().forEach(track => {
     peerConnection[index].addTrack(track, localStream);
   });
-}
-
-async function makeCall() {
-  await playLocalStream();
-  for (var i = 0; i < size; i++) {
-    peerConnection.push(new RTCPeerConnection(configuration));
-    addTrackEventListener(i);
-    addLocalTracks(i);
-    let offer = await peerConnection[i].createOffer();
-    offers.push(offer);
-  }
-  socket.emit('offers', offers, ROOM_ID);
 }
 
 function newIceCandidate(event, id, index) {

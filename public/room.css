@@ -4,19 +4,26 @@ body {
   background-color: #171717;
 }
 
-#video-grid {
-  display: flex;
-  justify-content: center;
-}
-.wrapper {
-  gap: 5px;
-  flex-wrap: wrap;
-}
-
 video {
   height: 300px;
   width: 400px;
   object-fit: cover;
+}
+
+.wrapper {
+  gap: 5px;
+  padding-top: 8px;
+  flex-wrap: wrap;
+  display: flex;
+  justify-content: center;
+}
+
+.video-div {
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  color: #d2d2d2;
+  font-size: 18px;
 }
 
 .main {
@@ -83,7 +90,7 @@ video {
 
 .main-controls-block {
   display: flex;
-  padding: 20px 8px;
+  padding: 0 8px 20px;
 }
 
 .main-controls-button {
