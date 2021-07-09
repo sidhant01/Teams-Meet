@@ -82,7 +82,7 @@ async function playLocalStream() {
     pressVideoButton();
   }
   myVideo = document.createElement('video');
-  // myVideo.muted = true;
+  myVideo.muted = true;
   myVideo.srcObject = localStream;
   myVideo.onloadedmetadata = function(e) {
     myVideo.play();
@@ -92,9 +92,7 @@ async function playLocalStream() {
 
 function addTrackEventListener(index, name) {
   const remoteStream = new MediaStream();
-  const div = document.createElement('div');
   const remoteVideo = document.createElement('video');
-  div.innerHTML = remoteVideo;
   remoteVideo.srcObject = remoteStream;
   peerConnection[index].ontrack = e => {
     remoteStream.addTrack(e.track, remoteStream);
