@@ -85,6 +85,7 @@ async function playLocalStream() {
   myVideo.onloadedmetadata = function(e) {
     myVideo.play();
   }
+  $(videoDiv).draggable();
   videoDiv.appendChild(myVideo);
   videoDiv.appendChild(nameElement);
   videoDiv.setAttribute('class', 'video-div');
@@ -121,6 +122,7 @@ function addTrackEventListener(index, name) {
   videoDiv.appendChild(remoteVideo);
   videoDiv.appendChild(nameElement);
   videoGrid.append(videoDiv);
+  $(videoDiv).draggable();
   peerConnection[index].addEventListener('closed', (req) => {
     let x = peerConnection.indexOf(req.target);
     videoDiv.remove();
