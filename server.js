@@ -37,21 +37,26 @@ io.on('connection', socket => {
     else {
       socket.emit('full');
     }
+
     socket.on('disconnect', () => {
+      // broadcast event disconnect when a user disconnects
       socket.broadcast.to(roomId).emit('user-disconnected', socket.id);
       size--;
     })
   })
 
+  // emit the ice candidate to the remote peer connection when generated
   socket.on('new-ice-candidate', (candidate, id, index) => {
     socket.to(id).emit('new-ice-candidate', candidate, index);
   });
 
+  // send the offers to the peers in the room
   socket.on('offers', async (offers, roomId, name) => {
     console.log('offer from ' + name);
     let i = 0;
     const peers = await io.in(roomId).fetchSockets();
     for (const peer of peers) {
+      // send an offer to all the peers except the sender
       if (peer.id != socket.id) {
         socket.to(peer.id).emit('offer', offers[i], socket.id, i, name);
         ++i;
@@ -59,11 +64,13 @@ io.on('connection', socket => {
     }
   });
 
+  // send answer to the peer who sent the offer
   socket.on('answer', (answer, roomId, id, index, name) => {
     console.log('answer from ' + name);
     socket.to(id).emit('answer', answer, socket.id, index, name);
   });
 
+  // broadcast the message in the room
   socket.on('new-message', (msg, name, roomId) => {
     socket.broadcast.to(roomId).emit('new-message', msg, name);
   });
