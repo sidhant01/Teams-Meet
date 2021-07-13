@@ -1,1 +1,24 @@
-# Video-Calling-Web-App
+# Teams-Meet
+A video chat app for teams
+
+## Features
+In Teams Meet you will have the ability to:
+- connect with multiple people
+- create a private room and invite people to join
+- turn on/off your video or audio
+- send text messages to the peers in the room
+
+## Link to application
+https://teams-meet.herokuapp.com
+
+## How to use it
+- To create a new private room, go to the application link.
+- Enter your name and click the join button.
+- Invite people to join the room by sending the room url.
+- To join a room, open the room's url in your browser, enter your name on the landing page and click on the join button.
+
+## How to run locally on your computer
+- Clone the repository.
+- Run command ```git install``` to install the dependencies.
+- Run command ```npm start```.
+- Go to https://localhost:3000 in your brower.
