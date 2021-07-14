@@ -1,5 +1,5 @@
 # Teams-Meet
-A video chat app for teams built using native WebRTC API.
+A video chat app for teams built using the native WebRTC API.
 
 ## Features
 In Teams Meet you will have the ability to:
