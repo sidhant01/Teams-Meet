@@ -14,7 +14,7 @@ Front-end | Back-end
 HTML | NodeJS
 CSS | ExpressJS
 Bootstrap | EJS
- | Socket.io
+- | Socket.io
 
 ## Link to application
 https://teams-meet.herokuapp.com
