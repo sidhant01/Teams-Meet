@@ -8,6 +8,14 @@ In Teams Meet you will have the ability to:
 - turn on/off your video or audio
 - send text messages to the peers in the room
 
+## Tech Stack
+Front-end | Back-end
+--------- | --------
+HTML | NodeJS
+CSS | ExpressJS
+Bootstrap | EJS
+ | Socket.io
+
 ## Link to application
 https://teams-meet.herokuapp.com
 
