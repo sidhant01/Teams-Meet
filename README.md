@@ -1,4 +1,4 @@
-https://forthebadge.com/images/badges/made-with-javascript.svg https://forthebadge.com/images/badges/uses-css.svg https://forthebadge.com/images/badges/built-with-love.svg
+[![forthebadge](https://forthebadge.com/images/badges/made-with-javascript.svg)](https://forthebadge.com) [![forthebadge](https://forthebadge.com/images/badges/uses-css.svg)](https://forthebadge.com) [![forthebadge](https://forthebadge.com/images/badges/built-with-love.svg)](https://forthebadge.com)
 
 # Teams-Meet
 A video chat app for teams built using the native WebRTC API.
