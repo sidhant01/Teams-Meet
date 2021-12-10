@@ -29,6 +29,6 @@ https://teams-meet.herokuapp.com
 
 ## How to run locally on your computer
 - Clone the repository.
-- Run command ```git install``` to install the dependencies.
-- Run command ```npm start```.
+- Run command ```npm install``` to install the dependencies.
+- Run command ```npm start``` to start the application.
 - Go to https://localhost:3000 in your brower.
